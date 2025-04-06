@@ -5,11 +5,14 @@ This project contains automated tests for the Packeta Widget (v6) using Playwrig
 ## Prerequisites
 
 *   [Node.js](https://nodejs.org/) (LTS version recommended)
-*   npm (usually comes with Node.js) or yarn
+*   npm (usually comes with Node.js) 
 
 ## Setup
 
 1.  **Clone/Download:** Get the project files onto your local machine.
+    ```bash
+    git clone https://github.com/lucielavickova-tesena/playwright-packeta-widget-tests.git
+    ```
 2.  **Navigate to Project Directory:**
     ```bash
     cd playwright-packeta-widget-tests
@@ -43,25 +46,20 @@ This project contains automated tests for the Packeta Widget (v6) using Playwrig
     # Run Chromium tests
     npx playwright test --project=chromium
 
-    # Run Firefox tests (if configured in playwright.config.ts)
-    # npx playwright test --project=firefox
+    # Run Firefox tests 
+    npx playwright test --project=firefox
 
-    # Run Webkit (Safari) tests (if configured in playwright.config.ts)
-    # npx playwright test --project=webkit
-    ```
-
-4.  **Run a Specific Test File:**
-    ```bash
-    npx playwright test tests/packeta-widget.spec.ts
+    # Run Webkit (Safari) tests 
+    npx playwright test --project=webkit
     ```
 
 5.  **Run a Specific Test Case (by title):**
     ```bash
-    # Run only the accessibility test
-    npx playwright test -g "TC2: Find Accessible 24/7 Z-Box in Prague 9"
-
     # Run only location detection tests
     npx playwright test -g "TC1: Location Detection"
+
+    # Run only the accessibility test
+    npx playwright test -g "TC2: Find Accessible 24/7 Z-Box in Prague 9" 
     ```
 
 ## Test Results
