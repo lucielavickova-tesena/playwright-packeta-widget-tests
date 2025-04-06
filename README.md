@@ -68,3 +68,21 @@ After running the tests, an HTML report will be generated in the `playwright-rep
 
 ```bash
 npx playwright show-report
+```
+
+## Other Test Ideas
+Ideas on other tests to implement:
+- mobile browser viewports
+- search
+- suggestions when searching
+- remove searched term
+- location button in the search bar
+- various filters combination
+- branch detail
+- map zoom + -
+- markers clustering
+- map fullscreen mode
+- geolocate button in the map (move somewhere else and then return to the original location by clicking this icon)
+- language mutations
+- FAQ link
+- accessibility (testing with screen reader, color contrast etc.)
