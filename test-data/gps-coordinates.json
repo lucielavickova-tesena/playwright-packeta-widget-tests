@@ -1,0 +1,32 @@
+[
+    {
+        "testName": "Prague Center",
+        "latitude": 50.0833, 
+        "longitude": 14.4333,
+        "expectedResultNearby": true 
+    },
+    {
+        "testName": "Brno Center",
+        "latitude": 49.1951, 
+        "longitude": 16.6068,
+        "expectedResultNearby": true
+    },
+    {
+        "testName": "Ostrava Center",
+        "latitude": 49.8356, 
+        "longitude": 18.2925,
+        "expectedResultNearby": true
+    },
+    {
+        "testName": "Pilsen Center",
+        "latitude": 49.7475, 
+        "longitude": 13.3775,
+        "expectedResultNearby": true
+    },
+    {
+        "testName": "Remote Area (no branches nearby)", 
+        "latitude": -21.2460, 
+        "longitude": 133.2200,
+        "expectedResultNearby": false 
+    }
+]

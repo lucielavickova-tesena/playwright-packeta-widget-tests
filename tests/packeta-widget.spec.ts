@@ -2,93 +2,81 @@
 import { test, expect, Page } from '@playwright/test';
 
 const WIDGET_URL = '/v6/';
-const extendedTimeout = 15000; 
-
-// --- Test Case 1 Data ---
-// Note: Finding the *exact* nearest Z-Box name is brittle as data changes.
-// The test will verify that *a* Z-Box is found near the emulated location.
-// TODO: use AI to generate test data dynamically?
-const locationTestData = [
-    {
-        testName: 'Prague Center',
-        latitude: 50.0833, // Near Wenceslas Square
-        longitude: 14.4333,
-        expectedResultNearby: true // Expect to find at least one nearby pickup point
-    },
-    {
-        testName: 'Brno Center',
-        latitude: 49.1951, // Near Freedom Square
-        longitude: 16.6068,
-        expectedResultNearby: true
-    },
-    {
-        testName: 'Ostrava Center',
-        latitude: 49.8356, // Near Masaryk Square
-        longitude: 18.2925,
-        expectedResultNearby: true
-    },
-    {
-        testName: 'Pilsen Center',
-        latitude: 49.7475, // Near Republic Square
-        longitude: 13.3775,
-        expectedResultNearby: true
-    },
-    {
-        testName: 'Remote Area (Test No Results)', // Choose coordinates with likely no nearby points
-        latitude: -21.2460, 
-        longitude: 133.2200,
-        expectedResultNearby: false 
-    }
-];
+const mapDisplayTimeout = 15000; // used when waiting for the map to be loaded
+const locationTestData = JSON.parse(JSON.stringify(require("../test-data/gps-coordinates.json")))
 
 // --- Test Suite ---
-
 test.describe('Packeta Widget Tests', () => {
 
     test.beforeEach(async ({ page }) => {
+        // Open Packeta widget page
         await page.goto(WIDGET_URL);
-        await page.getByRole('button', { name: 'Accept all cookies' }).click(); //TODO: pre-set in local storage of the browser
-        })
+
+        // Accept cookies
+        await page.locator('button[data-cookiefirst-action="accept"]').click(); //TODO: pre-set in local storage of the browser
+    })
 
     // --- Test Case 1: Location Detection (Data Driven) ---
     test.describe('TC1: Location Detection', () => {
         for (const testData of locationTestData) {
             test(`should detect location and find nearby points for ${testData.testName}`, async ({ page, context }) => {
-                // TODO: move locators to a central place
+                // TODO: create page object and move locators to the page object class
                 const mapCanvas = page.locator('#map canvas');
                 const markers = page.locator('.marker');
-                const clusterMarker = page.locator('.maplibregl-marker');
+                const pointers = page.locator('.pointer');
+                const clusterMarkers = page.locator('.maplibregl-marker');
+                const branchList = page.locator('.branch-list');
                 const branchListRows = page.locator('.branch-list-row');
+                const filterButton = page.getByTestId('filter_button');
+                const parcelPointsFilter = page.getByTestId('parcel_points_section');
+                const zBoxFilterOption = page.getByTestId('CZ-JGUZHA');
+                const submitFilterButton = page.getByTestId('filter_submit');
 
                 // Set emulated geolocation for this specific test context and reload the page
                 await context.setGeolocation({ latitude: testData.latitude, longitude: testData.longitude });
                 await page.reload();
 
                 // Expect the map to be loaded
-                await mapCanvas.waitFor({state: 'visible', timeout: extendedTimeout});
-                                
-                if (testData.expectedResultNearby) {
-                    // Check that there is at least one branch listed on the left
-                    expect(await branchListRows.count()).toBeGreaterThan(0); // at least one branch is displayed
+                await mapCanvas.waitFor({ state: 'visible', timeout: mapDisplayTimeout });
 
-                    // Check at least one marker is displayed on the map
-                    expect(await markers.count()).toBeGreaterThan(0);
-                    
+                // Open the filter menu 
+                await filterButton.click();
+
+                // Apply Z-BOX filter
+                await parcelPointsFilter.click();
+                await zBoxFilterOption.click();
+
+                // Submit the filter
+                await submitFilterButton.click();
+
+                if (testData.expectedResultNearby) {
+                    // Check at least one branch is listed on the left
+                    expect(await branchListRows.count()).toBeGreaterThan(0);
+
+                    // Check at least one marker or pointer is displayed on the map
+                    const numberOfPointerOrMarkerDisplayed = await markers.count() + await pointers.count();
+                    expect(numberOfPointerOrMarkerDisplayed).toBeGreaterThan(0);
+
                 } else {
+                    // Check no branches are displayed
+                    expect(await branchListRows.count()).toEqual(0);
+                    expect(await branchList.textContent()).toEqual('The list of pick-up points is not available.');
                     // Check the map does not display any detailed markers, just the ones with total number of branches in that area
                     expect(await markers.count()).toEqual(0);
-                    expect(await clusterMarker.count()).toBeGreaterThan(0);
+                    expect(await clusterMarkers.count()).toBeGreaterThan(0);
                 }
             });
         }
     });
 
     // --- Test Case 2: Accessible Z-Box in Prague 9 ---
-    test.only('TC2: Find Accessible 24/7 Z-Box in Prague 9', async ({ page }) => {
-        // TODO: move locators to a central place
+    test('TC2: Find Accessible 24/7 Z-Box in Prague 9', async ({ page }) => {
+        // TODO: create page object and move locators to the page object class
         const mapCanvas = page.locator('#map canvas');
+        const markers = page.locator('.marker');
+        const pointers = page.locator('.pointer');
         const searchInput = page.getByTestId('input_search_filed');
-        const autocompleteList = page.getByTestId('autocomplete_list');
+        const searchSuggestionsList = page.getByTestId('autocomplete_list');
         const filterButton = page.getByTestId('filter_button');
         const parcelPointsFilter = page.getByTestId('parcel_points_section');
         const zBoxFilterOption = page.getByTestId('CZ-JGUZHA');
@@ -96,7 +84,7 @@ test.describe('Packeta Widget Tests', () => {
         const wheelchairOption = page.getByTestId('wheelChair');
         const openHoursOption = page.getByTestId('open_hours_section');
         const submitFilterButton = page.getByTestId('filter_submit');
-        const branchListRow = page.locator('.branch-list-row');
+        const branchListRows = page.locator('.branch-list-row');
 
         // test data
         const searchedText = 'Praha 9';
@@ -105,12 +93,12 @@ test.describe('Packeta Widget Tests', () => {
         const nonstopOpenHoursText = 'Nonstop';
 
         // Wait until some branches appear
-        await mapCanvas.waitFor({state: 'visible', timeout: extendedTimeout});
-        await branchListRow.first().waitFor({state: 'visible'});
-        
+        await mapCanvas.waitFor({ state: 'visible', timeout: mapDisplayTimeout });
+        await branchListRows.first().waitFor({ state: 'visible' });
+
         // Search for "Praha 9"
         await searchInput.fill(searchedText);
-        await autocompleteList.waitFor({ state: 'visible' }); // wait for the autocomplete to appear, otherwise it covers the filter options later
+        await searchSuggestionsList.waitFor({ state: 'visible' }); // wait for the autocomplete to appear, otherwise it covers the filter options later
         await searchInput.press('Enter');
 
         // Open the filter menu 
@@ -132,11 +120,13 @@ test.describe('Packeta Widget Tests', () => {
         await submitFilterButton.click();
 
         // Verify results contain searched text
-        expect(await branchListRow.filter({ hasText: searchedText }).count()).toBeGreaterThan(0);
+        expect(await branchListRows.filter({ hasText: searchedText }).count()).toBeGreaterThan(0);
+
+        // Verify pointers or markers are displayed on the map
+        const numberOfPointerOrMarkerDisplayed = await markers.count() + await pointers.count();
+        expect(numberOfPointerOrMarkerDisplayed).toBeGreaterThan(0); // there is at least one marker or pointer on the map
+
         // TODO: create a loop and check that all found branches are Z-BOXes and are open nonstop (in the detail)
-        // TODO: verify markers are displayed on the map
     });
-
-
 
 });
