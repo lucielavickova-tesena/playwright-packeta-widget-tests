@@ -35,7 +35,7 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 },
 
     /* Set headless mode. False is useful for debugging */
-    headless: false, // Change to false to see the browser UI
+    headless: true, // Change to false to see the browser UI
 
     /* Permissions */
     permissions: ['geolocation'], // Pre-grant geolocation permission
