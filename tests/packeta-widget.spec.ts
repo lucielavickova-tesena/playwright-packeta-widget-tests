@@ -22,6 +22,7 @@ test.describe('Packeta Widget Tests', () => {
             test(`should detect location and find nearby points for ${testData.testName}`, async ({ page, context }) => {
                 // TODO: create page object and move locators to the page object class
                 const mapCanvas = page.locator('#map canvas');
+                const mapLoadingSpinner = page.locator('.spinnerWrapper-0-1-194');
                 const markers = page.locator('.marker');
                 const pointers = page.locator('.pointer');
                 const clusterMarkers = page.locator('.maplibregl-marker');
@@ -36,8 +37,9 @@ test.describe('Packeta Widget Tests', () => {
                 await context.setGeolocation({ latitude: testData.latitude, longitude: testData.longitude });
                 await page.reload();
 
-                // Expect the map to be loaded
-                await mapCanvas.waitFor({ state: 'visible', timeout: mapDisplayTimeout });
+                // Wait for the map to load
+                await mapLoadingSpinner.waitFor({ state: 'detached', timeout: mapDisplayTimeout });
+                await mapCanvas.waitFor({ state: 'visible'});
 
                 // Open the filter menu 
                 await filterButton.click();
@@ -49,18 +51,22 @@ test.describe('Packeta Widget Tests', () => {
                 // Submit the filter
                 await submitFilterButton.click();
 
+                // Wait for the map to load
+                await mapLoadingSpinner.waitFor({ state: 'detached', timeout: mapDisplayTimeout });
+                await mapCanvas.waitFor({ state: 'visible'});
+
                 if (testData.expectedResultNearby) {
                     // Check at least one branch is listed on the left
                     expect(await branchListRows.count()).toBeGreaterThan(0);
 
                     // Check at least one marker or pointer is displayed on the map
-                    const numberOfPointerOrMarkerDisplayed = await markers.count() + await pointers.count();
-                    expect(numberOfPointerOrMarkerDisplayed).toBeGreaterThan(0);
+                    expect(await markers.or(pointers).count()).toBeGreaterThan(0);
 
                 } else {
                     // Check no branches are displayed
                     expect(await branchListRows.count()).toEqual(0);
                     expect(await branchList.textContent()).toEqual('The list of pick-up points is not available.');
+                    
                     // Check the map does not display any detailed markers, just the ones with total number of branches in that area
                     expect(await markers.count()).toEqual(0);
                     expect(await clusterMarkers.count()).toBeGreaterThan(0);
@@ -73,6 +79,7 @@ test.describe('Packeta Widget Tests', () => {
     test('TC2: Find Accessible 24/7 Z-Box in Prague 9', async ({ page }) => {
         // TODO: create page object and move locators to the page object class
         const mapCanvas = page.locator('#map canvas');
+        const mapLoadingSpinner = page.locator('.spinnerWrapper-0-1-194');
         const markers = page.locator('.marker');
         const pointers = page.locator('.pointer');
         const searchInput = page.getByTestId('input_search_filed');
@@ -93,7 +100,8 @@ test.describe('Packeta Widget Tests', () => {
         const nonstopOpenHoursText = 'Nonstop';
 
         // Wait until some branches appear
-        await mapCanvas.waitFor({ state: 'visible', timeout: mapDisplayTimeout });
+        await mapLoadingSpinner.waitFor({ state: 'detached', timeout: mapDisplayTimeout });
+        await mapCanvas.waitFor({ state: 'visible'});
         await branchListRows.first().waitFor({ state: 'visible' });
 
         // Search for "Praha 9"
