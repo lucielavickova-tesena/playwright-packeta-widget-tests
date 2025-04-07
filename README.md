@@ -86,3 +86,4 @@ Ideas on other tests to implement:
 - language mutations
 - FAQ link
 - accessibility (testing with screen reader, color contrast etc.)
+- visual layout checks
