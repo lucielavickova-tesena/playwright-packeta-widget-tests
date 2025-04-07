@@ -61,6 +61,11 @@ This project contains automated tests for the Packeta Widget (v6) using Playwrig
     # Run only the accessibility test
     npx playwright test -g "TC2: Find Accessible 24/7 Z-Box in Prague 9" 
     ```
+    
+6.  **Run tests 5 times in Chrome browser, with trace mode on:**
+    ```bash
+    npx playwright test --project=chromium --repeat-each=5 --trace=on
+    ```
 
 ## Test Results
 
