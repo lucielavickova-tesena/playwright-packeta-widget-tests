@@ -1,9 +1,5 @@
 // tests/packeta-widget.spec.ts
-//import { test, expect} from '@playwright/test';
-//import { WidgetPage } from '../page-objects/widgetPage';
 import { test, expect } from '../fixtures/fixture';
-
-const mapDisplayTimeout = 15000; // used when waiting for the map to be loaded
 const locationTestData = JSON.parse(JSON.stringify(require("../test-data/gps-coordinates.json")))
 
 // --- Test Suite ---
@@ -82,3 +78,4 @@ test.describe('Packeta Widget Tests', () => {
     });
 
 });
+
