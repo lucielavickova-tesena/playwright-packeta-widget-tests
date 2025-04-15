@@ -1,8 +1,11 @@
-import { Page, Locator } from "@playwright/test";
+import { Page, Locator, BrowserContext } from "@playwright/test";
 
 export class Widget {
     readonly page: Page;
     readonly url: string;
+
+    // Accept cookies modal
+    readonly acceptAllCookiesButton: Locator;
 
     // Map related locators
     readonly mapCanvas: Locator;
@@ -30,6 +33,9 @@ export class Widget {
 
         this.page = page;
         this.url = '/v6/';
+
+        // Accept cookies
+        this.acceptAllCookiesButton = page.locator('button[data-cookiefirst-action="accept"]');
 
         // Map related locators
         this.mapCanvas = page.locator('#map canvas');
@@ -59,22 +65,13 @@ export class Widget {
         await this.page.goto(this.url);
     }
 
-    async reload() {
-        await this.page.reload();
-    }
-
-    async acceptCookies() {
-        this.page.locator('button[data-cookiefirst-action="accept"]').click();
-    }
-
-    async setGPSLocation(context, latitude, longitude) {
+    async setGPSLocation(context: BrowserContext, latitude: number, longitude: number) {
         await context.setGeolocation({ latitude, longitude });
         await this.page.reload();
+        this.waitForMapToLoad();
     }
 
     async filterZBox() {
-        await this.waitForMapToLoad();
-
         // Open the filter menu 
         await this.filterButton.click();
 
@@ -86,14 +83,9 @@ export class Widget {
         await this.submitFilterButton.click();
     }
 
-    async getBranchListRows() {
-        return this.branchListRows;
-    }
-
     async waitForMapToLoad() {
-        // Wait for the map to load
-        await this.mapLoadingSpinner.waitFor({ state: 'detached', timeout: mapDisplayTimeout });
-        await this.mapCanvas.waitFor({ state: 'visible' });
+        await this.mapLoadingSpinner.waitFor({ state: 'detached', timeout: 15000 });
+        await this.mapCanvas.waitFor({ state: 'visible', timeout: 5000 });
     }
 
 }
