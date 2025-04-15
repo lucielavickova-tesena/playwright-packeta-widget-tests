@@ -1,6 +1,6 @@
 import { Page, Locator, BrowserContext } from "@playwright/test";
 
-export class Widget {
+export class WidgetPage {
     readonly page: Page;
     readonly url: string;
 
@@ -32,7 +32,6 @@ export class Widget {
     constructor(page: Page) {
 
         this.page = page;
-        this.url = '/v6/';
 
         // Accept cookies
         this.acceptAllCookiesButton = page.locator('button[data-cookiefirst-action="accept"]');
@@ -61,16 +60,21 @@ export class Widget {
 
     }
 
-    async goto() {
-        await this.page.goto(this.url);
-    }
-
+    /**
+     * Set emulated GPS location to simulate user is located on some latitude and longitude
+     * @param context browser context
+     * @param latitude latitude of user's emulated GPS location
+     * @param longitude longitude of user's emulated GPS location
+     */
     async setGPSLocation(context: BrowserContext, latitude: number, longitude: number) {
         await context.setGeolocation({ latitude, longitude });
         await this.page.reload();
         this.waitForMapToLoad();
     }
 
+    /**
+     * Select Z-Box from the filter menu and submit
+     */
     async filterZBox() {
         // Open the filter menu 
         await this.filterButton.click();
@@ -83,6 +87,10 @@ export class Widget {
         await this.submitFilterButton.click();
     }
 
+    /**
+     * Wait for the map to be fully loaded - first, the loading animation needs to disappear (15sec)
+     * and then the map canvas becomes visible (5sec), then the test can continue. 
+     */
     async waitForMapToLoad() {
         await this.mapLoadingSpinner.waitFor({ state: 'detached', timeout: 15000 });
         await this.mapCanvas.waitFor({ state: 'visible', timeout: 5000 });
