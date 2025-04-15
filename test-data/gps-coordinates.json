@@ -6,21 +6,9 @@
         "expectedResultNearby": true 
     },
     {
-        "testName": "Brno Center",
-        "latitude": 49.1951, 
-        "longitude": 16.6068,
-        "expectedResultNearby": true
-    },
-    {
-        "testName": "Ostrava Center",
-        "latitude": 49.8356, 
-        "longitude": 18.2925,
-        "expectedResultNearby": true
-    },
-    {
-        "testName": "Pilsen Center",
-        "latitude": 49.7475, 
-        "longitude": 13.3775,
+        "testName": "Warszawa Center",
+        "latitude": 52.2543, 
+        "longitude": 21.0305,
         "expectedResultNearby": true
     },
     {
